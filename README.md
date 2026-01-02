@@ -31,32 +31,67 @@ sanctaphrax-specification/
 
 ## Quick Start
 
-### Prerequisites
+### Installing Catala
 
-**Catala** (requires OCaml/opam):
+Catala requires OCaml. The easiest path:
+
 ```bash
+# 1. Install opam (OCaml package manager)
+# macOS
+brew install opam
+
+# Ubuntu/Debian
+sudo apt-get install opam
+
+# 2. Initialize opam (first time only)
+opam init
+eval $(opam env)
+
+# 3. Install Catala
 opam install catala
 ```
 
-**LaTeX** (for paper compilation):
+Verify installation:
+```bash
+catala --version
+```
+
+### Compiling the Specifications
+
+```bash
+# Typecheck all Catala files
+make typecheck
+
+# Run the test suite
+make test
+```
+
+Or compile individual files directly:
+```bash
+# Typecheck a single file
+catala typecheck catala/aifmd_article_4.catala_en
+
+# Generate OCaml code
+catala ocaml catala/professional_investor.catala_en
+
+# Generate Python code
+catala python catala/raif_structure.catala_en
+
+# Run with scope execution (interactive testing)
+catala interpret catala/professional_investor.catala_en --scope=InvestorClassification
+```
+
+### Building the Paper (Optional)
+
+Requires LaTeX:
 ```bash
 # macOS
 brew install --cask mactex
 
 # Ubuntu/Debian
 sudo apt-get install texlive-full
-```
 
-### Build
-
-```bash
-# Typecheck Catala specifications
-make typecheck
-
-# Run tests
-make test
-
-# Compile paper
+# Compile
 make paper
 ```
 
@@ -77,7 +112,7 @@ make paper
   author={Bengrina, Aymane},
   year={2025},
   howpublished={GitHub},
-  url={https://github.com/aymane-bengrina/sanctaphrax-specification}
+  url={https://github.com/studioalticcio/sanctaphrax-specification}
 }
 ```
 
