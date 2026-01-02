@@ -1,0 +1,26 @@
+% Section 9: Open Questions
+
+\section{Open Questions}
+\label{sec:questions}
+
+This proof-of-concept raises several questions for future work:
+
+\paragraph{1. Scalability:} Can this approach handle a complete fund documentation set? A full LPA is 100+ pages; specifying every provision would require substantial effort. Is there a Pareto optimum---specifying the 20\% of provisions that cause 80\% of issues?
+
+\paragraph{2. Maintenance:} How do specifications stay current with law? When AIFMD II takes effect, all specifications must be updated. Who maintains the canonical specification? Is there a role for regulatory bodies?
+
+\paragraph{3. Legal Status:} If code and text diverge, which governs? The legal profession is far from accepting code as authoritative. But if specifications are used in practice, their legal status must be clarified.
+
+\paragraph{4. Collaboration:} How do we train lawyers to read Catala? The language is designed for readability, but legal professionals are not programmers. What tooling would bridge the gap?
+
+\paragraph{5. Incentives:} Who pays for specification? Who benefits? Law firms might resist (billable hours come from complexity). Fund sponsors might demand it (efficiency savings). Regulators might mandate it (compliance automation).
+
+\paragraph{6. Jurisdiction:} Can specifications handle multi-jurisdictional structures? A Luxembourg RAIF with a Cayman feeder, Delaware GP, and UK AIFM involves four legal systems. Is modular specification feasible?
+
+\paragraph{7. Validation:} How do we know the specification is correct? Short of judicial interpretation, there is no oracle. Peer review by legal experts? Backtesting against historical regulatory decisions?
+
+\paragraph{8. Interaction Effects:} Our specifications treat provisions in isolation. But legal rules interact: a side letter MFN clause affects investor treatment, which affects waterfall calculations, which affects GP economics. Modeling these interactions increases complexity exponentially.
+
+\paragraph{9. Natural Language Ambiguity:} Some ambiguity in legal text is deliberate---it provides flexibility for circumstances the drafter couldn't foresee. Should specifications preserve or resolve this ambiguity?
+
+\paragraph{10. Human Override:} Even with formal verification, humans make the final call. How should the relationship between automated checking and professional judgment be structured? What decisions are delegable? What are not?

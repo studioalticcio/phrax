@@ -1,0 +1,128 @@
+% Section 3: Specification I — The Definition of "AIF"
+
+\section{Specification I: The Definition of ``AIF''}
+\label{sec:aif}
+
+\subsection{The Legal Text}
+\label{sec:aif-text}
+
+AIFMD Article 4(1)(a) provides:
+
+\begin{quote}
+``\,`AIFs' means collective investment undertakings, including investment compartments thereof, which:
+\begin{enumerate}
+\renewcommand{\labelenumi}{(\roman{enumi})}
+  \item raise capital from a number of investors, with a view to investing it in accordance with a defined investment policy for the benefit of those investors; and
+  \item do not require authorisation pursuant to Article 5 of Directive 2009/65/EC [the UCITS Directive].''
+\end{enumerate}
+\end{quote}
+
+\noindent This deceptively simple definition determines whether an investment vehicle falls within the AIFMD regulatory perimeter.
+
+\subsection{Interpretive Challenges}
+\label{sec:aif-interpretation}
+
+Before encoding, we must resolve ambiguities:
+
+\begin{enumerate}
+  \item \textbf{``A number of investors''}: Does this mean $>1$? ESMA guidance suggests context-dependent analysis, considering whether the vehicle was designed to pool capital. We encode as \texttt{number\_of\_investors >= 2} but flag this as an interpretive choice.
+  
+  \item \textbf{``Defined investment policy''}: What counts as ``defined''? A single-asset SPV has a very narrow policy. We encode as a boolean input, acknowledging that determining this value requires human judgment.
+  
+  \item \textbf{``For the benefit of those investors''}: This is tautological for well-formed funds---no fund is structured to harm its investors. We encode as a boolean input defaulting to true.
+  
+  \item \textbf{Exclusions}: Article 2 excludes holding companies, securitisation SPVs, pension funds, etc. These require separate scope checks.
+\end{enumerate}
+
+\subsection{The Catala Specification}
+\label{sec:aif-spec}
+
+We define a structure capturing fund characteristics:
+
+\begin{lstlisting}
+declaration structure FundCharacteristics:
+  data is_collective_investment_undertaking content boolean
+  data raises_capital_from_investors content boolean
+  data number_of_investors content integer
+  data has_defined_investment_policy content boolean
+  data invests_for_investor_benefit content boolean
+  data requires_ucits_authorization content boolean
+\end{lstlisting}
+
+The core AIF definition scope:
+
+\begin{lstlisting}
+declaration scope AIFDefinition:
+  input fund content FundCharacteristics
+  output qualifies_as_aif content boolean
+  output classification_reasoning content text
+
+scope AIFDefinition:
+  definition qualifies_as_aif equals
+    fund.is_collective_investment_undertaking
+    and fund.raises_capital_from_investors
+    and fund.number_of_investors >= 2
+    and fund.has_defined_investment_policy
+    and fund.invests_for_investor_benefit
+    and (not fund.requires_ucits_authorization)
+\end{lstlisting}
+
+\subsection{Article 2 Exclusions}
+\label{sec:aif-exclusions}
+
+Article 2(3) excludes various entities. We implement these as exceptions:
+
+\begin{lstlisting}
+scope AIFExclusions:
+  # Default: apply base status
+  definition final_aif_status equals base_aif_status
+  definition exclusion_applied equals "No exclusion applied"
+
+  # Article 2(3)(a) - Holding companies
+  exception definition final_aif_status equals false
+    under condition
+      exclusions.exclusion_category = Some HoldingCompany
+      and exclusions.is_holding_company_per_article_4
+    consequence definition exclusion_applied equals
+      "Excluded as holding company under Article 2(3)(a)"
+\end{lstlisting}
+
+The exception mechanism explicitly encodes the legal hierarchy: the base rule applies unless an exclusion condition is met.
+
+\subsection{Interpretive Choices Documented}
+\label{sec:aif-choices}
+
+\begin{table*}[t]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+Element & Choice Made & Alternative & Rationale \\
+\midrule
+``Number of investors'' & $\geq 2$ & Context-dependent & Literal reading \\
+``Defined investment policy'' & Boolean input & Structured criteria & Human judgment \\
+``For the benefit of'' & Boolean input & Explicit test & Tautological \\
+\bottomrule
+\end{tabular}
+\caption{Interpretive choices in AIF definition encoding}
+\label{tab:aif-choices}
+\end{table*}
+
+\subsection{What the Specification Captures and Does Not Capture}
+\label{sec:aif-limits}
+
+\paragraph{Captured:}
+\begin{itemize}
+  \item The logical structure of the AIF definition
+  \item The hierarchy: base definition $\rightarrow$ exclusions
+  \item Traceability: which rule determined the outcome
+\end{itemize}
+
+\paragraph{Not Captured:}
+\begin{itemize}
+  \item The judgment required to determine ``defined investment policy''
+  \item Context-dependent interpretation of ``number of investors''
+  \item Interaction with national transposition variations
+  \item Temporal aspects (when was capital raised? when is status assessed?)
+\end{itemize}
+
+The specification surfaces \textit{where} human judgment is required. It does not replace that judgment.

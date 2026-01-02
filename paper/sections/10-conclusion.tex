@@ -1,0 +1,28 @@
+% Section 10: Conclusion
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have demonstrated that formal specification of fund law provisions is \textit{possible} using Catala. The AIF definition under AIFMD Article 4(1)(a), professional investor eligibility under MiFID II and RAIF Law, RAIF structural requirements, and cross-reference verification can be encoded in executable form.
+
+We have also demonstrated that formalization is \textit{limited}. Open-textured concepts, jurisdictional variation, temporal dynamics, and the gap between encoding and legal meaning create irreducible spaces where human judgment is required.
+
+The value of this exercise is not in replacing human judgment but in \textit{locating} where judgment is required. A specification that flags ``these two definitions of `Permitted Investment' differ'' allows a human to determine whether the difference is acceptable. The machine surfaces the question; the lawyer answers it.
+
+\paragraph{Practical Contribution:} The cross-reference verification specification suggests a deployable tool: automated document consistency checking. Even incomplete specifications could reduce review time and catch drafting errors.
+
+\paragraph{Theoretical Contribution:} This paper advances computational law beyond tax into the structured finance domain. Fund structures present unique challenges---multi-document ecosystems, layered exceptions, jurisdictional overlay---that stress-test the Catala approach. The approach holds, within documented limits.
+
+\paragraph{Methodological Contribution:} By explicitly documenting interpretive choices and formalization limits, we provide a template for honest computational law research. The goal is not overselling technology but understanding its capabilities and boundaries.
+
+\paragraph{Future Work:} Promising directions include:
+\begin{itemize}
+  \item Expanding to UCITS, MiFID product governance, or PRIIPs
+  \item Building document consistency tools for law firm use
+  \item Exploring regulatory adoption of machine-readable rules
+  \item Developing training materials for lawyer-programmer collaboration
+\end{itemize}
+
+All code is available at \url{https://github.com/aymane-bengrina/sanctaphrax-specification} under MIT license. We welcome contributions and critiques.
+
+\paragraph{Acknowledgments:} The author thanks Denis Merigoux for creating Catala, Sarah Lawsky for foundational work on computational tax, and Burkhard Schafer for ongoing guidance on computational legal theory. Any errors are my own.

@@ -1,0 +1,99 @@
+# RAIF Structural Requirements
+
+Source: Loi du 23 juillet 2016 relative aux fonds d'investissement
+alternatifs reserves (RAIF Law)
+
+## Legal Forms Available for RAIFs
+
+```catala-metadata
+declaration enumeration LegalForm:
+  -- SICAV_SA
+  -- SICAV_SCA
+  -- SICAF_SA
+  -- FCP
+  -- SCS
+  -- SCSp
+```
+
+## AIFM Types
+
+```catala-metadata
+declaration enumeration AIFMType:
+  -- InternalAIFM
+  -- ExternalLuxembourgAIFM
+  -- ExternalEUPassportedAIFM
+  -- ExternalThirdCountryAIFM
+```
+
+## RAIF Structure
+
+```catala-metadata
+declaration structure RAIFStructure:
+  data legal_form content LegalForm
+  data is_established_in_luxembourg content boolean
+  data aifm_type content AIFMType
+  data aifm_is_authorized content boolean
+  data depositary_appointed content boolean
+  data depositary_is_in_eu content boolean
+  data cssf_filing_complete content boolean
+  data all_investors_well_informed content boolean
+  data offering_document_prepared content boolean
+```
+
+## RAIF Compliance Check
+
+```catala-metadata
+declaration scope RAIFCompliance:
+  input fund content RAIFStructure
+  output is_compliant content boolean
+  output aifm_requirements_met content boolean
+  output investor_requirements_met content boolean
+```
+
+```catala
+scope RAIFCompliance:
+  definition aifm_requirements_met equals
+    fund.aifm_is_authorized
+
+  definition investor_requirements_met equals
+    fund.all_investors_well_informed
+
+  definition is_compliant equals
+    fund.is_established_in_luxembourg
+    and fund.aifm_is_authorized
+    and fund.depositary_appointed
+    and fund.depositary_is_in_eu
+    and fund.cssf_filing_complete
+    and fund.all_investors_well_informed
+    and fund.offering_document_prepared
+```
+
+## AIFM Delegation Requirements
+
+```catala-metadata
+declaration structure AIFMDelegation:
+  data portfolio_management_delegated content boolean
+  data risk_management_delegated content boolean
+  data both_delegated_to_same_entity content boolean
+  data aifm_maintains_oversight content boolean
+```
+
+```catala-metadata
+declaration scope AIFMDelegationCompliance:
+  input delegation content AIFMDelegation
+  output delegation_valid content boolean
+```
+
+```catala
+scope AIFMDelegationCompliance:
+  definition delegation_valid equals
+    delegation.aifm_maintains_oversight
+    and (not delegation.both_delegated_to_same_entity
+         or not (delegation.portfolio_management_delegated
+                 and delegation.risk_management_delegated))
+```
+
+## Commentary
+
+The RAIF structure is relatively straightforward to formalize because most
+requirements are binary checks.

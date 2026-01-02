@@ -1,0 +1,44 @@
+% Section 8: Implications
+
+\section{Implications}
+\label{sec:implications}
+
+\subsection{For Law Firms}
+\label{sec:law-firms}
+
+\paragraph{Document Review Tools:} The cross-reference specification suggests a practical tool: automated flagging of definition inconsistencies across fund documents. Even without full formalization, a system that highlights divergent terms would reduce review time and catch errors.
+
+\paragraph{Template Verification:} Law firms maintain precedent banks of fund documents. Catala-style specifications could verify that template amendments don't break existing logic---that adding a new investor category doesn't create orphan cross-references.
+
+\paragraph{Training:} Specifications could help train junior associates. Rather than reading 100 pages of LPA prose, a trainee could study the logical structure: what are the conditions for GP removal? What triggers an LPAC meeting? The specification is a map of the document's logic.
+
+\subsection{For Regulators}
+\label{sec:regulators}
+
+\paragraph{Machine-Readable Regulation:} Could CSSF circulars be published in Catala alongside natural language? This would eliminate interpretation disputes and allow automated compliance checking. The DG TAXUD work on computational tax illustrates the potential.
+
+\paragraph{Partial Automation:} Pre-screening of RAIF filings for structural compliance (authorized AIFM? depositary appointed?) could be automated, freeing reviewers for substantive assessment.
+
+\paragraph{Gap Identification:} Formal specification often reveals gaps in regulation. The encoding process forces clarity: what \textit{exactly} does ``significant size'' mean? This could inform regulatory revision.
+
+\subsection{For the Industry}
+\label{sec:industry}
+
+\paragraph{Standardization Pressure:} Verification works best with consistent structures. If the industry adopted standard definitions (perhaps through ILPA or Invest Europe), cross-document consistency checking becomes trivial.
+
+\paragraph{Cost-Benefit:} Full specification requires significant upfront investment. The question is: does the inconsistency detection value exceed the encoding cost? For €400M+ funds with complex side letter stacks, possibly yes.
+
+\paragraph{Liability Questions:} If a fund relies on formal verification and the specification is wrong, who bears liability? The specifier? The law firm that reviewed it? This creates new professional responsibility questions.
+
+\subsection{For Computational Law Research}
+\label{sec:research}
+
+This paper demonstrates that:
+
+\begin{enumerate}
+  \item Catala's default logic handles the fund law exception hierarchy naturally
+  \item Real inconsistencies in practice (like the BBB- vs.\ ``investment grade'' example) are detectable
+  \item The limits of formalization are identifiable and documentable
+\end{enumerate}
+
+Future research could extend to other regulatory domains: UCITS rules, MiFID product governance, PRIIPs disclosure requirements.

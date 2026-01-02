@@ -1,0 +1,113 @@
+# Professional Investor Eligibility
+
+Sources: MiFID II Annex II (Directive 2014/65/EU), RAIF Law Article 2 (2016)
+
+This specification encodes MiFID II professional client categories and
+RAIF "well-informed investor" extension.
+
+## Per Se Professional Categories
+
+```catala-metadata
+declaration enumeration PerSeProfessionalCategory:
+  -- CreditInstitution
+  -- InvestmentFirm
+  -- InsuranceCompany
+  -- CollectiveInvestmentScheme
+  -- PensionFund
+  -- NationalGovernment
+  -- CentralBank
+  -- NotPerSeProfessional
+```
+
+## Large Undertaking Test
+
+```catala-metadata
+declaration structure LargeUndertakingTest:
+  data balance_sheet_total content money
+  data net_turnover content money
+  data own_funds content money
+```
+
+## Combined Investor Profile
+
+```catala-metadata
+declaration structure InvestorProfile:
+  data per_se_category content PerSeProfessionalCategory
+  data large_undertaking_data content LargeUndertakingTest
+  data has_requested_professional_treatment content boolean
+  data firm_has_assessed_expertise content boolean
+```
+
+## MiFID II Professional Investor Status
+
+```catala-metadata
+declaration scope ProfessionalInvestorStatus:
+  input investor content InvestorProfile
+  output is_professional content boolean
+  output large_undertaking_criteria_met content integer
+```
+
+```catala
+scope ProfessionalInvestorStatus:
+  definition large_undertaking_criteria_met equals
+    (if investor.large_undertaking_data.balance_sheet_total >= $20,000,000
+     then 1 else 0)
+    + (if investor.large_undertaking_data.net_turnover >= $40,000,000
+       then 1 else 0)
+    + (if investor.large_undertaking_data.own_funds >= $2,000,000
+       then 1 else 0)
+
+  definition is_professional equals false
+
+  exception definition is_professional under condition
+    investor.per_se_category != NotPerSeProfessional
+  consequence equals true
+
+  exception definition is_professional under condition
+    large_undertaking_criteria_met >= 2
+  consequence equals true
+```
+
+## RAIF Law — Well-Informed Investor
+
+```catala-metadata
+declaration structure RAIFInvestorProfile:
+  data mifid_profile content InvestorProfile
+  data investing_minimum_125k content boolean
+  data has_written_confirmation_of_expertise content boolean
+  data is_director_or_conductor content boolean
+  data has_institutional_assessment content boolean
+```
+
+```catala-metadata
+declaration scope WellInformedInvestorStatus:
+  input investor content RAIFInvestorProfile
+  output is_well_informed content boolean
+```
+
+```catala
+scope WellInformedInvestorStatus:
+  definition is_well_informed equals false
+
+  exception definition is_well_informed under condition
+    investor.mifid_profile.per_se_category != NotPerSeProfessional
+  consequence equals true
+
+  exception definition is_well_informed under condition
+    investor.investing_minimum_125k
+    and investor.has_institutional_assessment
+  consequence equals true
+
+  exception definition is_well_informed under condition
+    investor.has_written_confirmation_of_expertise
+  consequence equals true
+
+  exception definition is_well_informed under condition
+    investor.is_director_or_conductor
+  consequence equals true
+```
+
+## Commentary
+
+Quantitative tests (large undertaking, 125k EUR minimum) are cleanly algorithmic.
+The hierarchy of categories maps naturally to Catala's exception structure.

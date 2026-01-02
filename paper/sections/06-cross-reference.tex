@@ -1,0 +1,131 @@
+% Section 6: Specification IV — Cross-Reference Verification
+
+\section{Specification IV: Cross-Reference Verification}
+\label{sec:crossref}
+
+\subsection{The Problem}
+\label{sec:crossref-problem}
+
+A fund structure contains multiple documents with overlapping definitions. For example, ``Permitted Investments'' may be defined in:
+
+\begin{itemize}
+  \item The LPA (Schedule 3)
+  \item The Offering Memorandum (Section 4)
+  \item The AIFM Agreement (Exhibit B)
+\end{itemize}
+
+These definitions \textit{should} be consistent. In practice, they often diverge through:
+
+\begin{itemize}
+  \item Drafting by different teams (LPA by fund counsel, OM by placement agent's counsel)
+  \item Amendments not propagated across documents
+  \item Deliberate variation (the OM is marketing; the LPA is binding)
+\end{itemize}
+
+\subsection{Real Example}
+\label{sec:crossref-example}
+
+In a recent fund review, the author found:
+
+\begin{quote}
+\textbf{LPA:} ``Permitted Investments include debt instruments rated at least BBB- by S\&P or equivalent.''
+
+\textbf{OM:} ``Permitted Investments include investment grade debt instruments.''
+\end{quote}
+
+These are \textit{not} equivalent. BBB- is the \textit{lowest} investment grade rating. The LPA is more specific; the OM is broader. An instrument rated BBB by Moody's but not rated by S\&P could arguably fall within the OM definition but outside the LPA definition.
+
+This inconsistency creates:
+\begin{itemize}
+  \item \textbf{Compliance risk}: Is an unrated instrument permitted?
+  \item \textbf{Marketing risk}: The OM promises broader scope than the LPA allows
+  \item \textbf{Investor disputes}: Which document governs?
+\end{itemize}
+
+\subsection{The Catala Specification}
+\label{sec:crossref-spec}
+
+We define structures to capture investment restrictions:
+
+\begin{lstlisting}
+declaration structure DebtRatingCriterion:
+  data rating_agency_specified content boolean
+  data specific_agency content text
+  data minimum_rating_specified content boolean
+  data minimum_rating content text
+  data uses_generic_term content boolean
+
+declaration structure PermittedInvestmentDef:
+  data document_source content text
+  data includes_debt_instruments content boolean
+  data debt_rating_criterion content DebtRatingCriterion option
+  data geographic_restrictions content list of text
+  data maximum_leverage content decimal option
+\end{lstlisting}
+
+The consistency check scope:
+
+\begin{lstlisting}
+scope DefinitionConsistency:
+  definition debt_rating_lpa_om_consistent equals
+    match (def_lpa.debt_rating_criterion, 
+           def_om.debt_rating_criterion) with pattern
+    -- (Some lpa_crit, Some om_crit):
+      if lpa_crit.uses_generic_term and 
+         om_crit.uses_generic_term then true
+      else if lpa_crit.minimum_rating_specified and 
+              om_crit.uses_generic_term then false
+      else lpa_crit.minimum_rating = om_crit.minimum_rating
+    -- (None, None): true
+    -- _: false
+\end{lstlisting}
+
+\subsection{Severity Classification}
+\label{sec:crossref-severity}
+
+We classify inconsistencies by severity:
+
+\begin{lstlisting}
+  # Default: no issues
+  definition severity equals None
+
+  # Low: geographic differences (may be intentional)
+  exception definition severity equals Low
+    under condition not geo_consistent
+      and debt_rating_lpa_om_consistent
+
+  # Medium: leverage differences
+  exception definition severity equals Medium
+    under condition not leverage_consistent
+      and debt_rating_lpa_om_consistent
+
+  # High: rating inconsistencies (compliance risk)
+  exception definition severity equals High
+    under condition not debt_rating_lpa_om_consistent
+\end{lstlisting}
+
+\subsection{Commentary}
+\label{sec:crossref-commentary}
+
+\paragraph{What This Demonstrates:}
+\begin{itemize}
+  \item Automated detection of definition inconsistencies
+  \item Severity classification to prioritize review
+  \item Traceability to specific documents and provisions
+\end{itemize}
+
+\paragraph{Limitations:}
+\begin{enumerate}
+  \item \textbf{Encoding cost}: Requires all documents to be encoded in structured form---a massive upfront investment
+  \item \textbf{Semantic limits}: Cannot detect semantic equivalence, only structural matching
+  \item \textbf{Intentional variation}: Some inconsistencies are deliberate (the OM may use marketing-friendly language)
+\end{enumerate}
+
+\paragraph{The Key Insight:} This is NOT about eliminating human judgment. It is about \textit{locating} where documents diverge, so humans can determine whether the divergence is:
+\begin{itemize}
+  \item Acceptable (intentional simplification for marketing)
+  \item Problematic (drafting error creating ambiguity)
+  \item Critical (binding terms that contradict each other)
+\end{itemize}
+
+The specification surfaces the question. The lawyer answers it.

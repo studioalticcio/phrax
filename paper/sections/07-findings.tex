@@ -1,0 +1,90 @@
+% Section 7: Findings — Where Formalization Breaks Down
+
+\section{Findings: Where Formalization Breaks Down}
+\label{sec:findings}
+
+\subsection{Category 1: Open-Textured Concepts}
+\label{sec:open-texture}
+
+Certain legal terms resist formalization:
+
+\begin{table*}[t]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Term & Source & Why It Resists \\
+\midrule
+``Defined investment policy'' & AIFMD Art. 4 & What counts as ``defined''? \\
+``Expertise, experience and knowledge'' & MiFID II Annex II & Inherently qualitative \\
+``Adequate'' assessment & MiFID II & Procedural adequacy is judgment \\
+``Commercially reasonable'' & LPA boilerplate & Context-dependent standard \\
+``Material adverse change'' & Side letters & Requires interpretation \\
+``Best efforts'' / ``Reasonable efforts'' & Various & Gradations without bright lines \\
+\bottomrule
+\end{tabular}
+\caption{Open-textured concepts resisting formalization}
+\label{tab:open-texture}
+\end{table*}
+
+These concepts cannot be encoded without making interpretive choices that may not match regulatory or judicial interpretation. Hart's concept of ``open texture'' \citep{hart1961concept} suggests this is inherent to law, not merely a drafting deficiency.
+
+\subsection{Category 2: Jurisdictional Variation}
+\label{sec:jurisdiction}
+
+The same directive is transposed differently across jurisdictions:
+
+\begin{itemize}
+  \item Luxembourg RAIF Law vs.\ Irish QIAIF regime
+  \item CSSF guidance vs.\ FCA guidance on same AIFMD provision
+  \item US LP investors subject to Volcker Rule overlay
+  \item Cayman feeder funds subject to different AML requirements
+\end{itemize}
+
+A specification for ``Luxembourg fund structures'' cannot capture these variations without becoming a multi-jurisdictional model of prohibitive complexity. Even within the EU, national gold-plating creates divergence.
+
+\subsection{Category 3: Temporal Dynamics}
+\label{sec:temporal}
+
+Fund structures evolve:
+
+\begin{itemize}
+  \item Amendment 17 may contradict Amendment 3
+  \item An investor who was ``professional'' at subscription may no longer qualify
+  \item Regulatory guidance changes; old structures may be ``grandfathered''
+  \item Investment restrictions may change between closings
+\end{itemize}
+
+A specification is a snapshot. The fund is a process. Verification would need to occur at each modification, with version control of the specification itself. This is tractable but multiplies complexity.
+
+\subsection{Category 4: The Specification-Reality Gap}
+\label{sec:gap}
+
+Even a ``complete'' specification verifies only:
+
+\begin{itemize}
+  \item That the \textit{encoded} rules are consistent
+  \item That \textit{inputs} (if accurate) produce correct \textit{outputs}
+\end{itemize}
+
+It does NOT verify:
+
+\begin{itemize}
+  \item That the encoding matches legal meaning (the interpretation problem)
+  \item That inputs are accurate (the data quality problem)
+  \item That the law will be interpreted as encoded (the adjudication problem)
+\end{itemize}
+
+Formal verification is verification \textit{relative to a model}. The model is not the law. A fund could pass all formal checks and still face regulatory enforcement if the specification misunderstood the legal requirement.
+
+\subsection{Category 5: The Incompleteness of Written Law}
+\label{sec:incompleteness}
+
+Much of fund practice operates in a space beyond written law:
+
+\begin{itemize}
+  \item Market convention (what a ``market standard'' side letter contains)
+  \item Regulatory practice (what CSSF actually accepts vs.\ what law says)
+  \item Professional judgment (what a ``reasonable'' board decision looks like)
+\end{itemize}
+
+These unwritten norms cannot be specified because they are not specified in the source material. They exist in practice, transmitted through precedent and professional socialization \citep{macaulay1963non}.

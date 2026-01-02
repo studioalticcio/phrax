@@ -1,0 +1,67 @@
+% Section 2: Background
+
+\section{Background}
+\label{sec:background}
+
+\subsection{Catala: A Domain-Specific Language for Law}
+\label{sec:catala}
+
+\catala{} was developed by Merigoux et al.\ at INRIA to encode legal rules in executable form while preserving the structure of legal reasoning~\cite{merigoux2021catala}. Unlike general-purpose programming languages, \catala{} was designed with specific features that mirror legal text:
+
+\paragraph{Literate Programming.} Legal text and code appear together in the same document. The statute or regulation is quoted verbatim, then encoded immediately below. This maintains \textit{traceability} between source and specification---every line of code can be traced to a specific legal provision.
+
+\paragraph{Default Logic.} \catala{} implements a form of default logic~\cite{reiter1980logic} where general rules can be overridden by exceptions. This matches the structure of virtually all legislation: a general rule, followed by exceptions, possibly with exceptions to exceptions. The \texttt{exception} keyword makes this structure explicit:
+
+\begin{lstlisting}
+definition is_professional equals false
+
+exception definition is_professional
+  under condition investor.category = CreditInstitution
+  consequence equals true
+\end{lstlisting}
+
+\paragraph{Formally Verified Compiler.} The \catala{} compiler has been partially verified using the F* proof assistant. The translation from \catala{} source to executable code is provably correct---if the specification is semantically well-formed, the execution will preserve that semantics.
+
+\paragraph{Multiple Backends.} \catala{} compiles to Python, OCaml, and JavaScript, allowing integration with existing legal technology systems, web applications, and analytical tools.
+
+\subsection{Default Logic and Legal Reasoning}
+\label{sec:default-logic}
+
+Lawsky argues persuasively that statutory reasoning is fundamentally \textit{defeasible}~\cite{lawsky2017logic}: conclusions hold unless some exception applies. Classical first-order logic struggles with this pattern. Consider the structure of tax law:
+
+\begin{quote}
+\textit{All income is taxable.}\\
+\textbf{Except}: Certain deductions reduce taxable income.\\
+\textbf{Unless}: The alternative minimum tax disallows those deductions.\\
+\textbf{Except}: Specific exemptions may still apply under AMT.
+\end{quote}
+
+In classical logic, encoding this requires elaborate universal quantification with deeply nested negated conditions. In default logic, we express the \textit{structure} directly: a base rule, subject to exceptions, which are themselves subject to further exceptions. The semantics handles the interaction automatically.
+
+\catala{} makes this explicit through exception chains. If multiple exceptions apply, the compiler detects the conflict and requires explicit prioritization---there are no silent ambiguities.
+
+\subsection{Why Fund Law?}
+\label{sec:why-fund-law}
+
+Fund regulation exhibits precisely the default/exception hierarchy that \catala{} was designed to handle:
+
+\begin{itemize}[nosep,leftmargin=1.5em]
+  \item \textbf{\aifmd{}} provides general EU-wide rules for alternative investment funds
+  \item \textbf{National Law} (\raif{} Law, AIFM Law) provides Luxembourg-specific exceptions and elaborations
+  \item \textbf{CSSF Circulars} provide regulatory guidance interpreting the law (further exceptions and clarifications)
+  \item \textbf{Fund Documents} (LPA, AIFM Agreement) provide fund-specific rules within regulatory limits
+  \item \textbf{Side Letters} provide LP-specific exceptions to fund documents
+\end{itemize}
+
+This creates a five-layer exception hierarchy, visualized in Figure~\ref{fig:hierarchy} (Appendix~\ref{app:graph}). Each layer can create exceptions to the layer above, within limits defined by the higher layer. A side letter cannot override \aifmd{}; but it can modify the LPA's default terms for a specific investor.
+
+\subsection{Prior Work}
+\label{sec:prior-work}
+
+\paragraph{Catala Applications.} Merigoux et al.\ demonstrated \catala{} on French family benefits legislation, notably discovering a bug in the official government implementation that had been undetected for years~\cite{merigoux2021catala}. Lawsky applied \catala{} to Section~121 of the US Internal Revenue Code (exclusion of gain from sale of principal residence), showing that even complex tax provisions with multiple interacting conditions can be faithfully specified~\cite{lawsky2022coding}.
+
+\paragraph{Computational Law Theory.} Grimmelmann examined the theoretical relationship between computer programs and legal interpretation, arguing that code can be a form of legal text~\cite{grimmelmann2023structure}. The COHUBICOL project at VU Brussels has provided critical analysis of computational law's promises and limits, cautioning against techno-solutionism~\cite{cohubicol2024}. Surden's early work on computable contracts laid conceptual groundwork~\cite{surden2012computable}.
+
+\paragraph{Smart Contracts.} Governatori et al.\ analyzed the relationship between legal contracts and blockchain-based smart contracts, identifying fundamental gaps between legal and computational semantics~\cite{governatori2018legal}. Our work differs in that we do not aim to execute contracts on a blockchain, but rather to \textit{verify} consistency across traditional legal documents.
+
+\paragraph{Gap.} No prior work has applied formal specification methods to investment fund structures or \aifmd{}. Tax law has received attention; fund law has not. This paper addresses that gap, while being explicit about what formal methods can and cannot achieve in this domain.

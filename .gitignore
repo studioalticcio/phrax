@@ -1,0 +1,38 @@
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdfsync
+*.dvi
+*.ps
+
+# Generated files
+paper/generated/*.tex
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Catala build artifacts
+_build/
+*.ml
+*.mli
+
+# Python bytecode (if using Catala Python backend)
+__pycache__/
+*.pyc

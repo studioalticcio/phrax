@@ -1,0 +1,62 @@
+# Test Cross Reference
+
+> Include: ../catala/cross_reference.catala_en
+
+## Test Cases
+
+```catala-metadata
+declaration scope CrossRef_Test_Suite:
+  output all_passed content boolean
+  output input_Consistent_LPA content PermittedInvestmentDef
+  output input_Inconsistent_OM content PermittedInvestmentDef
+  output input_AIFM_Def content PermittedInvestmentDef
+```
+
+```catala
+scope CrossRef_Test_Suite:
+  # Case 1 Inputs - LPA with specific rating requirement
+  definition input_Consistent_LPA equals PermittedInvestmentDef {
+    -- includes_debt_instruments: true
+    -- has_rating_requirement: true
+    -- uses_specific_rating: true
+    -- uses_generic_investment_grade: false
+    -- maximum_leverage: 0.50
+  }
+
+  # Case 2 Inputs - OM with generic investment grade (inconsistent with LPA)
+  definition input_Inconsistent_OM equals PermittedInvestmentDef {
+    -- includes_debt_instruments: true
+    -- has_rating_requirement: true
+    -- uses_specific_rating: false
+    -- uses_generic_investment_grade: true
+    -- maximum_leverage: 0.50
+  }
+
+  # AIFM definition matching LPA
+  definition input_AIFM_Def equals PermittedInvestmentDef {
+    -- includes_debt_instruments: true
+    -- has_rating_requirement: true
+    -- uses_specific_rating: true
+    -- uses_generic_investment_grade: false
+    -- maximum_leverage: 0.50
+  }
+
+  # Test assertions using Catala scope instantiation
+  definition all_passed equals
+    let result_inconsistent equals output of DefinitionConsistency with
+      { -- def_lpa: input_Consistent_LPA
+        -- def_om: input_Inconsistent_OM
+        -- def_aifm: input_AIFM_Def }
+    in
+    let result_consistent equals output of DefinitionConsistency with
+      { -- def_lpa: input_Consistent_LPA
+        -- def_om: input_Consistent_LPA
+        -- def_aifm: input_AIFM_Def }
+    in
+    # Inconsistent definitions should have High severity
+    result_inconsistent.severity = High
+    and result_inconsistent.all_consistent = false
+    # Consistent definitions should have None severity
+    and result_consistent.severity = None
+    and result_consistent.all_consistent = true
+```

@@ -1,0 +1,124 @@
+# AIFMD Article 4(1)(a) — Definition of Alternative Investment Fund
+
+Directive 2011/61/EU of the European Parliament and of the Council
+
+## Legal Source
+
+"'AIFs' means collective investment undertakings, including investment
+compartments thereof, which:
+(i) raise capital from a number of investors, with a view to investing it
+    in accordance with a defined investment policy for the benefit of those
+    investors; and
+(ii) do not require authorisation pursuant to Article 5 of Directive 2009/65/EC
+     [the UCITS Directive]."
+
+This specification encodes the core AIF definition and Article 2 exclusions.
+
+## Prologue: Data Structures
+
+```catala-metadata
+declaration structure FundCharacteristics:
+  data is_collective_investment_undertaking content boolean
+  data raises_capital_from_investors content boolean
+  data number_of_investors content integer
+  data has_defined_investment_policy content boolean
+  data invests_for_investor_benefit content boolean
+  data requires_ucits_authorization content boolean
+```
+
+## Article 4(1)(a) — Core AIF Definition
+
+```catala-metadata
+declaration scope AIFDefinition:
+  input fund content FundCharacteristics
+  output qualifies_as_aif content boolean
+```
+
+```catala
+scope AIFDefinition:
+  definition qualifies_as_aif equals
+    fund.is_collective_investment_undertaking
+    and fund.raises_capital_from_investors
+    and fund.number_of_investors >= 2
+    and fund.has_defined_investment_policy
+    and fund.invests_for_investor_benefit
+    and (not fund.requires_ucits_authorization)
+```
+
+## Article 2 — Exclusions from Scope
+
+```catala-metadata
+declaration enumeration ExclusionCategory:
+  -- HoldingCompany
+  -- PensionFund
+  -- EmployeeParticipationScheme
+  -- SecuritisationSPV
+  -- Supranational
+  -- CentralBank
+  -- NationalGovernment
+  -- NoExclusion
+```
+
+```catala-metadata
+declaration structure ExclusionCheck:
+  data exclusion_category content ExclusionCategory
+  data is_holding_company_per_article_4 content boolean
+```
+
+```catala-metadata
+declaration scope AIFExclusions:
+  input fund content FundCharacteristics
+  input exclusions content ExclusionCheck
+  output base_aif_status content boolean
+  output final_aif_status content boolean
+  output is_excluded content boolean
+```
+
+```catala
+scope AIFExclusions:
+  definition base_aif_status equals
+    fund.is_collective_investment_undertaking
+    and fund.raises_capital_from_investors
+    and fund.number_of_investors >= 2
+    and fund.has_defined_investment_policy
+    and (not fund.requires_ucits_authorization)
+
+  definition is_excluded equals false
+
+  definition final_aif_status equals
+    base_aif_status and not is_excluded
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = HoldingCompany
+    and exclusions.is_holding_company_per_article_4
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = PensionFund
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = EmployeeParticipationScheme
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = SecuritisationSPV
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = Supranational
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = CentralBank
+  consequence equals true
+
+  exception definition is_excluded under condition
+    exclusions.exclusion_category = NationalGovernment
+  consequence equals true
+```
+
+## Commentary
+
+This specification captures the logical structure of the AIF definition
+and the exception-based exclusion mechanism from Article 2(3).

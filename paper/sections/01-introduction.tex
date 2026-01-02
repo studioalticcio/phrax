@@ -1,0 +1,55 @@
+% Section 1: Introduction
+
+\section{Introduction}
+\label{sec:introduction}
+
+\lettrine[lines=2, lhang=0.15, loversize=0.1]{T}{he defining feature} of modern investment funds is not their asset strategy, but their documentary complexity. A standard Luxembourg Reserved Alternative Investment Fund (\raif{}) structure is not a single entity but a \textit{network} of interlocking legal agreements: a Limited Partnership Agreement (LPA), an AIFM Agreement, a Depositary Agreement, an Administration Agreement, and dozens of side letters granting individual investors bespoke terms. Each document imposes constraints on the others; a fee cap negotiated in a side letter must propagate to the Net Asset Value calculation logic in the Administration Agreement, which must align with the waterfall provisions in the LPA.
+
+Currently, the consistency of this distributed system is verified manually. This approach is fundamentally non-scalable. As the number of documents ($N$) grows, the number of potential cross-references grows as \bigO{N^2}. For a typical structure with 50+ documents, manual verification relies on heuristics---trust, precedent, and sample-checking---rather than exhaustive proof. This creates what we term \textbf{``legal bugs''}: silent inconsistencies that remain dormant until a liquidity event, regulatory audit, or investor dispute triggers a crisis.
+
+\subsection{The Case for Formal Verification}
+
+We posit that fund law is amenable to \textbf{formal verification}. Unlike criminal law, which relies heavily on reasonable person standards, or constitutional law, which involves balancing abstract principles, fund law is largely \textit{structural} and \textit{arithmetic}. It deals with:
+
+\begin{itemize}[nosep,leftmargin=1.5em]
+  \item \textbf{Thresholds}: Assets under Management $\geq$ €100M triggers full \aifmd{} scope
+  \item \textbf{Binary states}: Authorized vs.\ Registered AIFM status
+  \item \textbf{Precise definitions}: Professional Investor per \mifid{} Annex~II
+  \item \textbf{Algorithmic calculations}: Waterfall distributions, carried interest
+\end{itemize}
+
+These characteristics suggest that significant portions of fund law can be encoded as executable specifications that compile to provably correct implementations.
+
+\subsection{Contributions}
+
+In this work, we present \textbf{Sanctaphrax}, a proof-of-concept formalization of Luxembourg fund law using \textbf{\catala{}}~\cite{merigoux2021catala}. \catala{} is a domain-specific language (DSL) for literate programming that compiles law into correct-by-construction executable artifacts. It uses \textbf{default logic} to handle the general-case/exception structure typical of legislative texts---precisely the structure that dominates fund regulation.
+
+Our contributions are as follows:
+
+\begin{enumerate}[nosep,leftmargin=1.5em]
+  \item We provide the first formal specification of the \textbf{Definition of an AIF} under \aifmd{} Article~4(1)(a), explicitly documenting the interpretive choices required.
+
+  \item We implement a \textbf{Professional Investor eligibility oracle} that unifies \mifid{} and \raif{} Law requirements into a single decidable procedure.
+
+  \item We demonstrate an automated \textbf{Cross-Reference Verification} mechanism that detects definition inconsistencies across separate fund documents.
+
+  \item We analyze the \textbf{limits of formalization}, identifying and categorizing the approximately 15\% of provisions where human judgment cannot be replaced by code.
+\end{enumerate}
+
+\subsection{Approach and Limitations}
+
+Unlike Large Language Model (LLM) approaches which \textit{predict} likely legal text based on statistical patterns, our approach provides \textbf{provable guarantees}. If the specification compiles and the inputs match the real-world situation, the conclusion follows \textit{deductively} from the encoded law. There is no hallucination, no probabilistic uncertainty in the reasoning chain.
+
+However, we are explicit about what formal verification does \textit{not} provide:
+
+\begin{itemize}[nosep,leftmargin=1.5em]
+  \item It does not guarantee that our encoding matches the ``true'' legal meaning
+  \item It does not replace the judgment required for open-textured concepts
+  \item It does not predict how a court or regulator would interpret ambiguous provisions
+\end{itemize}
+
+The value lies in \textit{locating} where human judgment is required, not in replacing it. A specification that flags ``these two definitions of Permitted Investment differ'' allows a human to determine whether the difference is acceptable. The machine surfaces the question; the lawyer answers it.
+
+\subsection{Paper Organization}
+
+Section~\ref{sec:background} introduces \catala{} and default logic, explaining why fund law is a suitable domain. Sections~\ref{sec:aif}--\ref{sec:crossref} present our four specifications: AIF definition, Professional Investor eligibility, \raif{} structural requirements, and cross-reference verification. Section~\ref{sec:findings} analyzes where formalization breaks down. Section~\ref{sec:implications} discusses implications for practitioners, regulators, and researchers. Section~\ref{sec:questions} poses open questions. Section~\ref{sec:conclusion} concludes.

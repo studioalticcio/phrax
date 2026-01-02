@@ -1,0 +1,128 @@
+% Dependency Graph: Fund Structure Hierarchy
+% Enhanced TikZ figure showing regulatory and contractual layers
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  scale=0.85,
+  transform shape,
+  % Layer styles with gradients
+  layer/.style={
+    rectangle,
+    draw=#1!60!black,
+    line width=0.8pt,
+    minimum width=9.5cm,
+    minimum height=0.75cm,
+    align=center,
+    font=\small\sffamily,
+    rounded corners=2pt,
+    fill=#1!15,
+    drop shadow={shadow xshift=0.5mm, shadow yshift=-0.5mm, opacity=0.2}
+  },
+  eu/.style={layer=blue},
+  national/.style={layer=green!70!black},
+  regulatory/.style={layer=yellow!80!black},
+  contractual/.style={layer=orange},
+  individual/.style={layer=red!70!black},
+  % Arrow style
+  arrow/.style={
+    ->,
+    >={Stealth[length=2.5mm]},
+    thick,
+    draw=gray!70
+  },
+  % Brace annotation style
+  annot/.style={
+    font=\scriptsize\sffamily,
+    align=right,
+    text=gray!70!black
+  }
+]
+
+% === NODES ===
+\node[eu] (aifmd) at (0,0) {\textbf{EU Directive:} AIFMD 2011/61/EU};
+\node[eu] (mifid) at (0,-1.1) {\textbf{EU Directive:} MiFID II 2014/65/EU};
+
+\node[national] (raif) at (0,-2.5) {\textbf{Luxembourg:} RAIF Law 2016};
+\node[national] (aifm) at (0,-3.6) {\textbf{Luxembourg:} AIFM Law 2013};
+
+\node[regulatory] (cssf) at (0,-5.0) {\textbf{Regulator:} CSSF Circulars \& Guidance};
+
+\node[contractual] (lpa) at (0,-6.4) {\textbf{Fund:} Limited Partnership Agreement (LPA)};
+\node[contractual] (aifmag) at (0,-7.5) {\textbf{Fund:} AIFM Agreement};
+\node[contractual] (dep) at (0,-8.6) {\textbf{Fund:} Depositary Agreement};
+\node[contractual] (om) at (0,-9.7) {\textbf{Fund:} Offering Memorandum / PPM};
+
+\node[individual] (side) at (0,-11.1) {\textbf{Investor:} Side Letters (per LP)};
+
+% === ARROWS ===
+\draw[arrow] (aifmd.south) -- ++(0,-0.15) -| ([xshift=-2cm]raif.north) -- (raif.north);
+\draw[arrow] (aifmd.south) -- ++(0,-0.15) -| ([xshift=2cm]aifm.north) -- (aifm.north);
+\draw[arrow] (mifid.south) -- (raif.north);
+\draw[arrow] (raif.south) -- (cssf.north);
+\draw[arrow] (aifm.south) -- ++(0,-0.15) -| ([xshift=1.5cm]cssf.north) -- ([xshift=1.5cm]cssf.north);
+\draw[arrow] (cssf.south) -- (lpa.north);
+\draw[arrow] (lpa.south) -- (aifmag.north);
+\draw[arrow] (lpa.south) -- ++(0,-0.15) -| ([xshift=-2cm]dep.north) -- (dep.north);
+\draw[arrow] (lpa.south) -- ++(0,-0.15) -| ([xshift=2cm]om.north) -- (om.north);
+\draw[arrow] (lpa.south) -- ++(0,-0.15) -| ([xshift=-3cm]side.north) -- (side.north);
+
+% === LEGEND ===
+\begin{scope}[shift={(6.5,-3)}]
+  \node[font=\small\sffamily\bfseries, anchor=north west] at (0,0.5) {Legend};
+  \draw[thick, gray!40] (-0.2,0.3) -- (2.8,0.3);
+
+  \node[rectangle, fill=blue!15, draw=blue!60!black, minimum width=0.6cm, minimum height=0.35cm, rounded corners=1pt] at (0.3,-0.2) {};
+  \node[font=\scriptsize\sffamily, anchor=west] at (0.7,-0.2) {EU Directives};
+
+  \node[rectangle, fill=green!70!black!15, draw=green!70!black!60!black, minimum width=0.6cm, minimum height=0.35cm, rounded corners=1pt] at (0.3,-0.7) {};
+  \node[font=\scriptsize\sffamily, anchor=west] at (0.7,-0.7) {National Law};
+
+  \node[rectangle, fill=yellow!80!black!15, draw=yellow!80!black!60!black, minimum width=0.6cm, minimum height=0.35cm, rounded corners=1pt] at (0.3,-1.2) {};
+  \node[font=\scriptsize\sffamily, anchor=west] at (0.7,-1.2) {Regulatory Guidance};
+
+  \node[rectangle, fill=orange!15, draw=orange!60!black, minimum width=0.6cm, minimum height=0.35cm, rounded corners=1pt] at (0.3,-1.7) {};
+  \node[font=\scriptsize\sffamily, anchor=west] at (0.7,-1.7) {Fund Documents};
+
+  \node[rectangle, fill=red!70!black!15, draw=red!70!black!60!black, minimum width=0.6cm, minimum height=0.35cm, rounded corners=1pt] at (0.3,-2.2) {};
+  \node[font=\scriptsize\sffamily, anchor=west] at (0.7,-2.2) {Individual Terms};
+\end{scope}
+
+% === ANNOTATIONS (LEFT SIDE) ===
+\draw[decorate, decoration={brace, amplitude=8pt, mirror}, thick, gray!60]
+  (-5.3,0.4) -- (-5.3,-1.5)
+  node[midway, annot, xshift=-0.8cm] {Sets EU\\framework};
+
+\draw[decorate, decoration={brace, amplitude=8pt, mirror}, thick, gray!60]
+  (-5.3,-2.1) -- (-5.3,-4.0)
+  node[midway, annot, xshift=-0.8cm] {National\\transposition};
+
+\draw[decorate, decoration={brace, amplitude=8pt, mirror}, thick, gray!60]
+  (-5.3,-4.6) -- (-5.3,-5.4)
+  node[midway, annot, xshift=-0.8cm] {Interprets\\\& guides};
+
+\draw[decorate, decoration={brace, amplitude=8pt, mirror}, thick, gray!60]
+  (-5.3,-6.0) -- (-5.3,-10.1)
+  node[midway, annot, xshift=-0.8cm] {Implements\\in practice};
+
+\draw[decorate, decoration={brace, amplitude=8pt, mirror}, thick, gray!60]
+  (-5.3,-10.7) -- (-5.3,-11.5)
+  node[midway, annot, xshift=-0.8cm] {Customizes\\per investor};
+
+% === COMPLEXITY ANNOTATION (RIGHT SIDE) ===
+\begin{scope}[shift={(6.5,-7.5)}]
+  \node[font=\small\sffamily\bfseries, anchor=north west, text=red!70!black] at (0,0.5) {Complexity};
+  \draw[thick, gray!40] (-0.2,0.3) -- (2.8,0.3);
+
+  \node[font=\scriptsize\sffamily, anchor=west, text width=2.5cm, align=left] at (0,-0.2) {
+    Cross-references\\
+    grow as $\mathcal{O}(N^2)$\\[0.3em]
+    \textit{50 documents}\\
+    \textit{= 1,225 pairs}
+  };
+\end{scope}
+
+\end{tikzpicture}
+\caption{Regulatory and contractual hierarchy in Luxembourg fund structures. EU directives establish the framework; national law transposes requirements; regulatory guidance interprets them; fund documents implement specific terms; and side letters customize arrangements per investor. Each layer may create exceptions to layers above, within permitted limits. The cross-reference complexity between $N$ documents grows quadratically, creating verification challenges that formal methods can address.}
+\label{fig:hierarchy}
+\end{figure*}

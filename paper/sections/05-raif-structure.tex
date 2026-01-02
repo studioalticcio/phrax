@@ -1,0 +1,119 @@
+% Section 5: Specification III — RAIF Structural Requirements
+
+\section{Specification III: RAIF Structural Requirements}
+\label{sec:raif}
+
+\subsection{The RAIF Regime}
+\label{sec:raif-regime}
+
+The Reserved Alternative Investment Fund (RAIF) was introduced by Luxembourg law in 2016. A RAIF combines the regulatory flexibility of an unregulated vehicle with the legal certainty of a dedicated statute. Key features:
+
+\begin{itemize}
+  \item \textbf{No CSSF authorization}: Unlike SIFs or Part II UCIs, RAIFs are not authorized by the regulator. They must only file with CSSF for statistical purposes.
+  \item \textbf{Mandatory AIFM}: Every RAIF must appoint an authorized AIFM (internal or external).
+  \item \textbf{Investor restriction}: Only ``well-informed investors'' may invest.
+  \item \textbf{Flexible legal form}: RAIFs may take various corporate or contractual forms.
+\end{itemize}
+
+\subsection{Legal Form Options}
+\label{sec:legal-forms}
+
+\begin{lstlisting}
+declaration enumeration LegalForm:
+  -- SICAV_SA
+  -- SICAV_SCA
+  -- SICAV_Sarl
+  -- SICAF_SA
+  -- SICAF_SCA
+  -- SICAF_Sarl
+  -- FCP
+  -- SCS
+  -- SCSp
+\end{lstlisting}
+
+The \textbf{SCSp} (Société en Commandite Spéciale) form is particularly popular for private equity and venture capital structures due to its flexibility and tax transparency. It closely mirrors Anglo-American limited partnerships.
+
+\subsection{Structural Compliance Check}
+\label{sec:raif-compliance}
+
+We define a structure capturing RAIF requirements:
+
+\begin{lstlisting}
+declaration structure RAIFStructure:
+  data legal_form content LegalForm
+  data establishment_jurisdiction content text
+  data aifm_type content AIFMType
+  data aifm_is_authorized content boolean
+  data depositary_appointed content boolean
+  data depositary_jurisdiction content text
+  data cssf_filing_complete content boolean
+  data all_investors_well_informed content boolean
+  data offering_document_prepared content boolean
+\end{lstlisting}
+
+The compliance scope performs a structural check:
+
+\begin{lstlisting}
+scope RAIFCompliance:
+  definition is_compliant equals
+    fund.establishment_jurisdiction = "Luxembourg"
+    and fund.aifm_is_authorized
+    and fund.depositary_appointed
+    and (fund.depositary_jurisdiction = "Luxembourg" 
+         or fund.depositary_jurisdiction = "EU")
+    and fund.cssf_filing_complete
+    and fund.all_investors_well_informed
+    and fund.offering_document_prepared
+
+  definition compliance_failures equals
+    (if not (fund.establishment_jurisdiction = "Luxembourg")
+     then ["FAILURE: RAIF must be established in Luxembourg"]
+     else [])
+    ++ [... additional checks ...]
+\end{lstlisting}
+
+\subsection{AIFM Delegation Requirements}
+\label{sec:delegation}
+
+When a RAIF uses an external AIFM, delegation rules apply. The AIFM may delegate portfolio management or risk management, but:
+
+\begin{itemize}
+  \item Both functions cannot be delegated to the same entity
+  \item The AIFM must maintain oversight
+  \item Material delegations must be notified to CSSF
+\end{itemize}
+
+\begin{lstlisting}
+scope AIFMDelegationCompliance:
+  definition delegation_valid equals
+    delegation.aifm_maintains_oversight
+    and (not delegation.both_delegated_to_same_entity 
+         or not (delegation.portfolio_management_delegated 
+                 and delegation.risk_management_delegated))
+\end{lstlisting}
+
+\subsection{Commentary}
+\label{sec:raif-commentary}
+
+\paragraph{Structural Simplicity:} The RAIF structure is relatively straightforward to formalize because most requirements are binary checks:
+\begin{itemize}
+  \item Is there an authorized AIFM?
+  \item Is there a depositary?
+  \item Are all investors well-informed?
+\end{itemize}
+
+\paragraph{Areas Requiring Judgment:}
+\begin{enumerate}
+  \item \textbf{``Authorized'' AIFM}: The specification checks a boolean, but determining whether an AIFM is validly authorized requires verification against CSSF registers and assessment of passport validity.
+  \item \textbf{``Well-informed'' Investors}: Cross-references to the professional investor specification. Each investor must be individually assessed.
+  \item \textbf{Offering Document}: The specification checks existence, not adequacy. Whether the offering document meets disclosure requirements is qualitative.
+\end{enumerate}
+
+\paragraph{Temporal Considerations:} This specification is a point-in-time check. In practice:
+\begin{itemize}
+  \item CSSF filing must occur within 1 month of RAIF launch
+  \item Annual reports must be filed within 6 months of year-end
+  \item Investor status should be verified at each subscription
+\end{itemize}
+
+A complete implementation would need to track these temporal obligations.

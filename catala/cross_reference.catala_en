@@ -1,0 +1,97 @@
+# Cross-Reference Verification
+
+Document Consistency Checking for Fund Structures
+
+This specification demonstrates automated detection of inconsistencies
+across fund documentation.
+
+## Severity Levels
+
+```catala-metadata
+declaration enumeration InconsistencySeverity:
+  -- High
+  -- Medium
+  -- Low
+  -- None
+```
+
+## Permitted Investment Definition
+
+```catala-metadata
+declaration structure PermittedInvestmentDef:
+  data includes_debt_instruments content boolean
+  data has_rating_requirement content boolean
+  data uses_specific_rating content boolean
+  data uses_generic_investment_grade content boolean
+  data maximum_leverage content decimal
+```
+
+## Definition Consistency Check
+
+```catala-metadata
+declaration scope DefinitionConsistency:
+  input def_lpa content PermittedInvestmentDef
+  input def_om content PermittedInvestmentDef
+  input def_aifm content PermittedInvestmentDef
+  output rating_consistent content boolean
+  output leverage_consistent content boolean
+  output all_consistent content boolean
+  output severity content InconsistencySeverity
+```
+
+```catala
+scope DefinitionConsistency:
+  definition rating_consistent equals
+    (def_lpa.uses_specific_rating = def_om.uses_specific_rating)
+    and (def_lpa.uses_generic_investment_grade = def_om.uses_generic_investment_grade)
+
+  definition leverage_consistent equals
+    def_lpa.maximum_leverage = def_om.maximum_leverage
+    and def_om.maximum_leverage = def_aifm.maximum_leverage
+
+  definition all_consistent equals
+    rating_consistent and leverage_consistent
+
+  definition severity equals None
+
+  exception definition severity under condition
+    not rating_consistent
+  consequence equals High
+
+  exception definition severity under condition
+    rating_consistent and not leverage_consistent
+  consequence equals Medium
+```
+
+## Fee Consistency Check
+
+```catala-metadata
+declaration structure FeeDefinition:
+  data management_fee_rate content decimal
+  data performance_fee_rate content decimal
+  data performance_fee_hurdle content decimal
+```
+
+```catala-metadata
+declaration scope FeeConsistency:
+  input lpa_fees content FeeDefinition
+  input aifm_fees content FeeDefinition
+  output fees_consistent content boolean
+```
+
+```catala
+scope FeeConsistency:
+  definition fees_consistent equals
+    lpa_fees.management_fee_rate = aifm_fees.management_fee_rate
+    and lpa_fees.performance_fee_rate = aifm_fees.performance_fee_rate
+    and lpa_fees.performance_fee_hurdle = aifm_fees.performance_fee_hurdle
+```
+
+## Commentary
+
+This specification demonstrates automated detection of definition
+inconsistencies across documents, with severity classification.
+
+The key insight is that this is NOT about eliminating human judgment.
+It is about locating where documents diverge, so humans can determine
+whether the divergence is acceptable, problematic, or critical.

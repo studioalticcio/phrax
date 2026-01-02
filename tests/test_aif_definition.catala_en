@@ -1,0 +1,61 @@
+# Test AIF Definition
+
+> Include: ../catala/aifmd_article_4.catala_en
+
+## Test Cases
+
+```catala-metadata
+declaration scope AIF_Test_Suite:
+  output all_passed content boolean
+  output input_StandardAIF content FundCharacteristics
+  output input_SingleInvestor content FundCharacteristics
+  output input_UCITS content FundCharacteristics
+```
+
+```catala
+scope AIF_Test_Suite:
+  # Case 1: Standard AIF
+  definition input_StandardAIF equals FundCharacteristics {
+    -- is_collective_investment_undertaking: true
+    -- raises_capital_from_investors: true
+    -- number_of_investors: 10
+    -- has_defined_investment_policy: true
+    -- invests_for_investor_benefit: true
+    -- requires_ucits_authorization: false
+  }
+
+  # Case 2: Not AIF (Single Investor)
+  definition input_SingleInvestor equals FundCharacteristics {
+    -- is_collective_investment_undertaking: true
+    -- raises_capital_from_investors: true
+    -- number_of_investors: 1
+    -- has_defined_investment_policy: true
+    -- invests_for_investor_benefit: true
+    -- requires_ucits_authorization: false
+  }
+
+  # Case 3: UCITS (Excluded)
+  definition input_UCITS equals FundCharacteristics {
+    -- is_collective_investment_undertaking: true
+    -- raises_capital_from_investors: true
+    -- number_of_investors: 100
+    -- has_defined_investment_policy: true
+    -- invests_for_investor_benefit: true
+    -- requires_ucits_authorization: true
+  }
+
+  # Test assertions using Catala scope instantiation
+  definition all_passed equals
+    let result_standard equals output of AIFDefinition with
+      { -- fund: input_StandardAIF }
+    in
+    let result_single equals output of AIFDefinition with
+      { -- fund: input_SingleInvestor }
+    in
+    let result_ucits equals output of AIFDefinition with
+      { -- fund: input_UCITS }
+    in
+    result_standard.qualifies_as_aif = true
+    and result_single.qualifies_as_aif = false
+    and result_ucits.qualifies_as_aif = false
+```

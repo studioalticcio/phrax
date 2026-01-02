@@ -1,0 +1,138 @@
+% Section 4: Specification II — Professional Investor Eligibility
+
+\section{Specification II: Professional Investor Eligibility}
+\label{sec:investor}
+
+\subsection{The Legal Framework}
+\label{sec:investor-framework}
+
+RAIF Law Article 2 restricts RAIFs to ``well-informed investors,'' defined as:
+
+\begin{itemize}
+  \item Institutional investors
+  \item Professional investors (per MiFID II)
+  \item Other investors who meet specified criteria
+\end{itemize}
+
+MiFID II Annex II defines ``professional clients'' in two categories:
+
+\begin{enumerate}
+  \item \textbf{Per se professionals}: Entities that are professional by nature (credit institutions, investment firms, insurance companies, etc.)
+  \item \textbf{Elective professionals}: Clients who meet quantitative/qualitative tests and request professional treatment
+\end{enumerate}
+
+\subsection{Per Se Professional Categories}
+\label{sec:per-se}
+
+We define an enumeration of per se professional categories:
+
+\begin{lstlisting}
+declaration enumeration PerSeProfessionalCategory:
+  -- CreditInstitution
+  -- InvestmentFirm
+  -- OtherAuthorizedFinancialInstitution
+  -- InsuranceCompany
+  -- CollectiveInvestmentScheme
+  -- PensionFund
+  -- CommodityDealer
+  -- LocalFirm
+  -- OtherInstitutionalInvestor
+  -- NationalGovernment
+  -- CentralBank
+  -- InternationalOrganisation
+\end{lstlisting}
+
+Classification is straightforward: if an investor falls into any of these categories, they are per se professional.
+
+\subsection{Large Undertaking Test}
+\label{sec:large-undertaking}
+
+MiFID II Annex II Section I(2) allows large undertakings to be treated as professional clients if they meet \textbf{at least two} of three criteria:
+
+\begin{itemize}
+  \item Balance sheet total $\geq$ €20,000,000
+  \item Net turnover $\geq$ €40,000,000
+  \item Own funds $\geq$ €2,000,000
+\end{itemize}
+
+\begin{lstlisting}
+declaration structure LargeUndertakingTest:
+  data balance_sheet_total content money
+  data net_turnover content money
+  data own_funds content money
+
+scope ProfessionalInvestorStatus:
+  definition large_undertaking_criteria_met equals
+    match investor.large_undertaking_data with pattern
+    -- Some data:
+      (if data.balance_sheet_total >= $20,000,000 then 1 else 0)
+      + (if data.net_turnover >= $40,000,000 then 1 else 0)
+      + (if data.own_funds >= $2,000,000 then 1 else 0)
+    -- None: 0
+
+  exception definition is_professional equals true
+    under condition large_undertaking_criteria_met >= 2
+\end{lstlisting}
+
+\subsection{Elective Professional Test}
+\label{sec:elective}
+
+MiFID II Annex II Section II allows opt-in to professional status if:
+
+\begin{enumerate}
+  \item The client \textbf{requests} professional treatment
+  \item The firm \textbf{assesses} the client's expertise
+  \item The client meets \textbf{at least two} of three criteria:
+  \begin{itemize}
+    \item Carried out $\geq 10$ transactions of significant size per quarter for last 4 quarters
+    \item Portfolio size $\geq$ €500,000
+    \item Works or has worked in financial sector for $\geq 1$ year in relevant role
+  \end{itemize}
+\end{enumerate}
+
+\subsection{RAIF ``Well-Informed Investor'' Extension}
+\label{sec:well-informed}
+
+RAIF Law Article 2 extends beyond MiFID II professional status:
+
+\begin{lstlisting}
+scope WellInformedInvestorStatus:
+  # Path 1: MiFID II Professional
+  exception definition is_well_informed equals true
+    under condition [is MiFID professional]
+    
+  # Path 2: 125,000 minimum + institutional assessment
+  exception definition is_well_informed equals true
+    under condition
+      investor.investing_minimum_125k
+      and has_institutional_assessment
+
+  # Path 3: Written confirmation of expertise
+  exception definition is_well_informed equals true
+    under condition
+      investor.has_written_confirmation_of_expertise
+
+  # Path 4: Director/conductor of RAIF
+  exception definition is_well_informed equals true
+    under condition
+      investor.is_director_or_conductor
+\end{lstlisting}
+
+\subsection{Commentary}
+\label{sec:investor-commentary}
+
+\paragraph{What Works Well:}
+\begin{itemize}
+  \item Quantitative tests (large undertaking, €125k minimum) are cleanly algorithmic
+  \item The hierarchy of categories maps naturally to Catala's exception structure
+  \item Traceability: we can identify \textit{which} path qualified the investor
+\end{itemize}
+
+\paragraph{What Requires Judgment:}
+\begin{itemize}
+  \item ``Expertise, experience and knowledge'' assessment (qualitative)
+  \item ``Significant size'' of transactions (context-dependent)
+  \item Whether firm's assessment was adequate (procedural)
+\end{itemize}
+
+\paragraph{Specification Gap:} The elective professional test requires the \textit{firm} to assess the client's expertise. Our specification checks whether the assessment \textit{occurred}, not whether it was \textit{adequate}. Adequacy is irreducibly a human judgment.
