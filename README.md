@@ -1,133 +1,90 @@
-# Sanctaphrax Specification
+# phrax
 
-**Toward Formal Specification of Luxembourg Fund Structures: A Catala Proof-of-Concept**
+Formal specification of financial regulations using [Catala](https://catala-lang.org).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository contains the technical implementation accompanying the essay "La Tour: On Fund Structures Nobody Has Fully Read."
+## What is phrax?
 
-## Overview
+phrax translates legal text into executable, testable code. It takes EU financial directives (AIFMD, MiFID II, RAIF Law) and encodes them in Catala—a language designed to mirror the structure of legislation.
 
-This project demonstrates formal specification of selected provisions from:
-- **AIFMD** (Alternative Investment Fund Managers Directive 2011/61/EU)
-- **RAIF Law** (Luxembourg Reserved Alternative Investment Fund Law 2016)
-- **MiFID II** (Markets in Financial Instruments Directive 2014/65/EU)
+The result: specifications you can typecheck, test, and compile to OCaml or Python.
 
-Using [Catala](https://catala-lang.org), a domain-specific language for law.
-
-## Repository Structure
-
-```
-sanctaphrax-specification/
-├── paper/              # LaTeX technical paper
-├── catala/             # Catala specifications
-│   ├── aifmd_article_4.catala_en
-│   ├── professional_investor.catala_en
-│   ├── raif_structure.catala_en
-│   └── cross_reference.catala_en
-├── tests/              # Test suite
-└── docs/               # Documentation
-```
-
-## Quick Start
-
-### Installing Catala
-
-Catala requires OCaml. The easiest path:
+## Installation
 
 ```bash
-# 1. Install opam (OCaml package manager)
-# macOS
-brew install opam
+# Install opam (OCaml package manager)
+brew install opam      # macOS
+# or: sudo apt install opam   # Ubuntu/Debian
 
-# Ubuntu/Debian
-sudo apt-get install opam
-
-# 2. Initialize opam (first time only)
+# Initialize opam
 opam init
 eval $(opam env)
 
-# 3. Install Catala
+# Install Catala
 opam install catala
-```
 
-Verify installation:
-```bash
+# Verify
 catala --version
 ```
 
-### Compiling the Specifications
+## Usage
 
 ```bash
-# Typecheck all Catala files
+# Typecheck all specifications
 make typecheck
 
-# Run the test suite
+# Run tests
 make test
 ```
 
-Or compile individual files directly:
+Individual files:
+
 ```bash
-# Typecheck a single file
+# Typecheck
 catala typecheck catala/aifmd_article_4.catala_en
 
-# Generate OCaml code
+# Generate OCaml
 catala ocaml catala/professional_investor.catala_en
 
-# Generate Python code
+# Generate Python
 catala python catala/raif_structure.catala_en
 
-# Run with scope execution (interactive testing)
+# Interpret a scope
 catala interpret catala/professional_investor.catala_en --scope=InvestorClassification
-```
-
-### Building the Paper (Optional)
-
-Requires LaTeX:
-```bash
-# macOS
-brew install --cask mactex
-
-# Ubuntu/Debian
-sudo apt-get install texlive-full
-
-# Compile
-make paper
 ```
 
 ## Specifications
 
-| File | Legal Source | Description |
-|------|--------------|-------------|
-| `aifmd_article_4.catala_en` | AIFMD Art. 4(1)(a) | Definition of "AIF" |
-| `professional_investor.catala_en` | MiFID II Annex II, RAIF Law Art. 2 | Investor eligibility |
-| `raif_structure.catala_en` | RAIF Law 2016 | Structural requirements |
-| `cross_reference.catala_en` | — | Document consistency verification |
+| File | Source | What it encodes |
+|------|--------|-----------------|
+| `aifmd_article_4.catala_en` | AIFMD Art. 4(1)(a) | Definition of "alternative investment fund" |
+| `professional_investor.catala_en` | MiFID II Annex II | Professional investor eligibility criteria |
+| `raif_structure.catala_en` | RAIF Law 2016 | Reserved AIF structural requirements |
+| `cross_reference.catala_en` | — | Cross-document consistency checks |
 
-## Citation
+## Project Structure
 
-```bibtex
-@misc{bengrina2025sanctaphrax,
-  title={Toward Formal Specification of Luxembourg Fund Structures: A Catala Proof-of-Concept},
-  author={Bengrina, Aymane},
-  year={2025},
-  howpublished={GitHub},
-  url={https://github.com/studioalticcio/sanctaphrax-specification}
-}
+```
+phrax/
+├── catala/     # Catala specifications
+├── tests/      # Test cases
+├── paper/      # Technical paper (LaTeX)
+└── docs/       # Documentation
 ```
 
-## Author
+## Paper
 
-**Aymane Bengrina**  
-Studio Alticcio  
-aymane@alticc.io
+The accompanying paper explains the methodology and findings:
+
+```bash
+make paper  # requires LaTeX
+```
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+MIT
 
-## Acknowledgments
+## Author
 
-- Denis Merigoux and the Catala team at INRIA
-- Sarah Lawsky (Northwestern) for foundational work on computational tax law
-- Burkhard Schafer (Edinburgh) for computational legal theory
+Aymane Bengrina — [aymane@alticc.io](mailto:aymane@alticc.io)
