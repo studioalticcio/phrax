@@ -2,75 +2,281 @@
 
 > Include: ../catala/professional_investor.catala_en
 
-## Test Cases
+Covers every branch of ProfessionalInvestorStatus (per se, large
+undertaking 2-of-3, elective) and WellInformedInvestorStatus
+(institutional, professional, written adherence + EUR 100k OR
+assessment, Article 2(2) exemption), including boundary values.
+
+## Shared profiles
 
 ```catala-metadata
-declaration scope Investor_Test_Suite:
-  output all_passed content boolean
-  output input_CreditInst_Profile content InvestorProfile
-  output input_LargeUndertaking_Profile content InvestorProfile
-  output input_RAIF_Profile content RAIFInvestorProfile
+declaration retail_profile content InvestorProfile equals
+  InvestorProfile {
+    -- per_se_category: NotPerSeProfessional
+    -- large_undertaking_data: LargeUndertakingTest {
+         -- balance_sheet_total: $0
+         -- net_turnover: $0
+         -- own_funds: $0
+       }
+    -- has_requested_professional_treatment: false
+    -- firm_has_assessed_expertise: false
+  }
+
+declaration raif_base content RAIFInvestorProfile equals
+  RAIFInvestorProfile {
+    -- mifid_profile: retail_profile
+    -- is_institutional_investor: false
+    -- has_written_adherence: false
+    -- investment_amount: $0
+    -- has_expertise_assessment: false
+    -- is_involved_in_management: false
+  }
 ```
 
+## MiFID II — ProfessionalInvestorStatus
+
 ```catala
-scope Investor_Test_Suite:
-  # Case 1: Per Se Professional (Credit Institution)
-  definition input_CreditInst_Profile equals InvestorProfile {
-      -- per_se_category: CreditInstitution
-      -- large_undertaking_data: LargeUndertakingTest {
-           -- balance_sheet_total: $0
-           -- net_turnover: $0
-           -- own_funds: $0
-         }
-      -- has_requested_professional_treatment: false
-      -- firm_has_assessed_expertise: false
-  }
+#[test]
+declaration scope Test_PerSe_CreditInstitution:
+  output status content ProfessionalInvestorStatus
 
-  # Case 3: Large Undertaking (Balance Sheet + Turnover)
-  definition input_LargeUndertaking_Profile equals InvestorProfile {
-      -- per_se_category: NotPerSeProfessional
-      -- large_undertaking_data: LargeUndertakingTest {
-           -- balance_sheet_total: $25,000,000
-           -- net_turnover: $50,000,000
-           -- own_funds: $0
-         }
-      -- has_requested_professional_treatment: false
-      -- firm_has_assessed_expertise: false
-  }
+scope Test_PerSe_CreditInstitution:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: CreditInstitution
+        -- large_undertaking_data: retail_profile.large_undertaking_data
+        -- has_requested_professional_treatment: false
+        -- firm_has_assessed_expertise: false
+      } }
+  assertion status.is_professional
 
-  # Case 4: RAIF Well-Informed (125k + Assessment)
-  definition input_RAIF_Profile equals RAIFInvestorProfile {
-      -- mifid_profile: InvestorProfile {
-           -- per_se_category: NotPerSeProfessional
-           -- large_undertaking_data: LargeUndertakingTest {
-                -- balance_sheet_total: $0
-                -- net_turnover: $0
-                -- own_funds: $0
-              }
-           -- has_requested_professional_treatment: false
-           -- firm_has_assessed_expertise: false
-         }
-      -- investing_minimum_125k: true
-      -- has_institutional_assessment: true
-      -- has_written_confirmation_of_expertise: false
-      -- is_director_or_conductor: false
-  }
+#[test]
+declaration scope Test_LargeUndertaking_TwoOfThree:
+  output status content ProfessionalInvestorStatus
 
-  # Test assertions using Catala scope instantiation
-  definition all_passed equals
-    let result_credit_inst equals output of ProfessionalInvestorStatus with
-      { -- investor: input_CreditInst_Profile }
-    in
-    let result_large_undertaking equals output of ProfessionalInvestorStatus with
-      { -- investor: input_LargeUndertaking_Profile }
-    in
-    let result_raif equals output of WellInformedInvestorStatus with
-      { -- investor: input_RAIF_Profile }
-    in
-    # Credit institution is per se professional
-    result_credit_inst.is_professional = true
-    # Large undertaking meets 2/3 criteria (balance sheet + turnover)
-    and result_large_undertaking.is_professional = true
-    # RAIF investor with 125k + assessment is well-informed
-    and result_raif.is_well_informed = true
+scope Test_LargeUndertaking_TwoOfThree:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: NotPerSeProfessional
+        -- large_undertaking_data: LargeUndertakingTest {
+             -- balance_sheet_total: $25,000,000
+             -- net_turnover: $50,000,000
+             -- own_funds: $0
+           }
+        -- has_requested_professional_treatment: false
+        -- firm_has_assessed_expertise: false
+      } }
+  assertion status.is_professional
+  assertion status.large_undertaking_criteria_met = 2
+
+#[test]
+declaration scope Test_LargeUndertaking_OneOfThree_Fails:
+  output status content ProfessionalInvestorStatus
+
+scope Test_LargeUndertaking_OneOfThree_Fails:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: NotPerSeProfessional
+        -- large_undertaking_data: LargeUndertakingTest {
+             -- balance_sheet_total: $25,000,000
+             -- net_turnover: $0
+             -- own_funds: $0
+           }
+        -- has_requested_professional_treatment: false
+        -- firm_has_assessed_expertise: false
+      } }
+  assertion not status.is_professional
+  assertion status.large_undertaking_criteria_met = 1
+
+#[test]
+declaration scope Test_LargeUndertaking_ExactThresholds:
+  output status content ProfessionalInvestorStatus
+
+scope Test_LargeUndertaking_ExactThresholds:
+  # Boundary: criteria are "equals or exceeds".
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: NotPerSeProfessional
+        -- large_undertaking_data: LargeUndertakingTest {
+             -- balance_sheet_total: $20,000,000
+             -- net_turnover: $40,000,000
+             -- own_funds: $2,000,000
+           }
+        -- has_requested_professional_treatment: false
+        -- firm_has_assessed_expertise: false
+      } }
+  assertion status.is_professional
+  assertion status.large_undertaking_criteria_met = 3
+
+#[test]
+declaration scope Test_Elective_Professional:
+  output status content ProfessionalInvestorStatus
+
+scope Test_Elective_Professional:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: NotPerSeProfessional
+        -- large_undertaking_data: retail_profile.large_undertaking_data
+        -- has_requested_professional_treatment: true
+        -- firm_has_assessed_expertise: true
+      } }
+  assertion status.is_professional
+
+#[test]
+declaration scope Test_Elective_RequestWithoutAssessment_Fails:
+  output status content ProfessionalInvestorStatus
+
+scope Test_Elective_RequestWithoutAssessment_Fails:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: InvestorProfile {
+        -- per_se_category: NotPerSeProfessional
+        -- large_undertaking_data: retail_profile.large_undertaking_data
+        -- has_requested_professional_treatment: true
+        -- firm_has_assessed_expertise: false
+      } }
+  assertion not status.is_professional
+
+#[test]
+declaration scope Test_Retail_NotProfessional:
+  output status content ProfessionalInvestorStatus
+
+scope Test_Retail_NotProfessional:
+  definition status equals output of ProfessionalInvestorStatus with
+    { -- investor: retail_profile }
+  assertion not status.is_professional
+  assertion status.large_undertaking_criteria_met = 0
+```
+
+## RAIF Article 2 — WellInformedInvestorStatus
+
+```catala
+#[test]
+declaration scope Test_WII_Institutional:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_Institutional:
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: true
+        -- has_written_adherence: false
+        -- investment_amount: $0
+        -- has_expertise_assessment: false
+        -- is_involved_in_management: false
+      } }
+  assertion status.is_well_informed
+  assertion status.may_invest
+
+#[test]
+declaration scope Test_WII_ProfessionalViaMiFID:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_ProfessionalViaMiFID:
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: InvestorProfile {
+             -- per_se_category: PensionFund
+             -- large_undertaking_data: retail_profile.large_undertaking_data
+             -- has_requested_professional_treatment: false
+             -- firm_has_assessed_expertise: false
+           }
+        -- is_institutional_investor: false
+        -- has_written_adherence: false
+        -- investment_amount: $0
+        -- has_expertise_assessment: false
+        -- is_involved_in_management: false
+      } }
+  assertion status.is_well_informed
+
+#[test]
+declaration scope Test_WII_Adherence_And_100k:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_Adherence_And_100k:
+  # Article 2(1)(a) + (b)(i): written adherence + EUR 100,000,
+  # no assessment needed. Exactly at the post-2023 threshold.
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: false
+        -- has_written_adherence: true
+        -- investment_amount: $100,000
+        -- has_expertise_assessment: false
+        -- is_involved_in_management: false
+      } }
+  assertion status.is_well_informed
+
+#[test]
+declaration scope Test_WII_Adherence_And_Assessment:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_Adherence_And_Assessment:
+  # Article 2(1)(a) + (b)(ii): written adherence + assessment,
+  # below the monetary minimum.
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: false
+        -- has_written_adherence: true
+        -- investment_amount: $10,000
+        -- has_expertise_assessment: true
+        -- is_involved_in_management: false
+      } }
+  assertion status.is_well_informed
+
+#[test]
+declaration scope Test_WII_100k_WithoutAdherence_Fails:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_100k_WithoutAdherence_Fails:
+  # Limb (b) alone is not enough: (a) is conjunctive.
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: false
+        -- has_written_adherence: false
+        -- investment_amount: $500,000
+        -- has_expertise_assessment: true
+        -- is_involved_in_management: false
+      } }
+  assertion not status.is_well_informed
+  assertion not status.may_invest
+
+#[test]
+declaration scope Test_WII_AdherenceAlone_Fails:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_AdherenceAlone_Fails:
+  # Limb (a) alone is not enough: (b)(i) or (b)(ii) required.
+  # Also checks the boundary just under EUR 100,000.
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: false
+        -- has_written_adherence: true
+        -- investment_amount: $99,999.99
+        -- has_expertise_assessment: false
+        -- is_involved_in_management: false
+      } }
+  assertion not status.is_well_informed
+
+#[test]
+declaration scope Test_WII_Director_Exempt:
+  output status content WellInformedInvestorStatus
+
+scope Test_WII_Director_Exempt:
+  # Article 2(2): involved in management — may invest without
+  # meeting the conditions, but is not thereby "well-informed".
+  definition status equals output of WellInformedInvestorStatus with
+    { -- investor: RAIFInvestorProfile {
+        -- mifid_profile: retail_profile
+        -- is_institutional_investor: false
+        -- has_written_adherence: false
+        -- investment_amount: $0
+        -- has_expertise_assessment: false
+        -- is_involved_in_management: true
+      } }
+  assertion not status.is_well_informed
+  assertion status.exempt_from_conditions
+  assertion status.may_invest
 ```

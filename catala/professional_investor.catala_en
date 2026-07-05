@@ -1,9 +1,11 @@
 # Professional Investor Eligibility
 
-Sources: MiFID II Annex II (Directive 2014/65/EU), RAIF Law Article 2 (2016)
+Sources: MiFID II Annex II (Directive 2014/65/EU), RAIF Law Article 2
+(Law of 23 July 2016, as amended by the Law of 21 July 2023 — minimum
+investment lowered from EUR 125,000 to EUR 100,000)
 
 This specification encodes MiFID II professional client categories and
-RAIF "well-informed investor" extension.
+the RAIF "well-informed investor" extension.
 
 ## Per Se Professional Categories
 
@@ -40,6 +42,16 @@ declaration structure InvestorProfile:
 
 ## MiFID II Professional Investor Status
 
+Annex II section I: per se professionals (categories, and large
+undertakings meeting 2 of 3 size criteria). Annex II section II:
+elective professionals — clients who request professional treatment
+and whose expertise the firm has positively assessed.
+
+Interpretive simplification: Annex II section II.1 also imposes
+quantitative client-side criteria (trading frequency, portfolio size,
+professional experience). These are folded into
+`firm_has_assessed_expertise` here; see docs/methodology.md.
+
 ```catala-metadata
 declaration scope ProfessionalInvestorStatus:
   input investor content InvestorProfile
@@ -66,48 +78,88 @@ scope ProfessionalInvestorStatus:
   exception definition is_professional under condition
     large_undertaking_criteria_met >= 2
   consequence equals true
+
+  exception definition is_professional under condition
+    investor.has_requested_professional_treatment
+    and investor.firm_has_assessed_expertise
+  consequence equals true
 ```
 
 ## RAIF Law — Well-Informed Investor
 
+RAIF Law Article 2(1): a well-informed investor is an institutional
+investor, a professional investor within the meaning of Annex II to
+Directive 2014/65/EU, or any other investor who meets BOTH of the
+following conditions:
+
+a) he has stated in writing that he adheres to the status of
+   well-informed investor, and
+b) (i) he invests a minimum of EUR 100,000 in the RAIF, or
+   (ii) he has been the subject of an assessment by a credit
+        institution, an investment firm, a UCITS management company
+        or an authorised AIFM, certifying his expertise, experience
+        and knowledge to adequately appraise the investment.
+
+Article 2(2): these conditions do not apply to directors and other
+persons involved in the management of the RAIF.
+
 ```catala-metadata
 declaration structure RAIFInvestorProfile:
   data mifid_profile content InvestorProfile
-  data investing_minimum_125k content boolean
-  data has_written_confirmation_of_expertise content boolean
-  data is_director_or_conductor content boolean
-  data has_institutional_assessment content boolean
+  data is_institutional_investor content boolean
+  data has_written_adherence content boolean
+  data investment_amount content money
+  data has_expertise_assessment content boolean
+  data is_involved_in_management content boolean
 ```
 
 ```catala-metadata
 declaration scope WellInformedInvestorStatus:
   input investor content RAIFInvestorProfile
   output is_well_informed content boolean
+  output exempt_from_conditions content boolean
+  output may_invest content boolean
 ```
 
 ```catala
 scope WellInformedInvestorStatus:
+  # Article 2(2) — directors and managers are exempt from the
+  # conditions; modelled as a separate output rather than as
+  # well-informed status, which the statute does not confer on them.
+  definition exempt_from_conditions equals
+    investor.is_involved_in_management
+
+  # Article 2(1) — general rule and its three limbs.
   definition is_well_informed equals false
 
   exception definition is_well_informed under condition
-    investor.mifid_profile.per_se_category != NotPerSeProfessional
+    investor.is_institutional_investor
   consequence equals true
 
   exception definition is_well_informed under condition
-    investor.investing_minimum_125k
-    and investor.has_institutional_assessment
+    (output of ProfessionalInvestorStatus with
+      { -- investor: investor.mifid_profile }).is_professional
   consequence equals true
 
   exception definition is_well_informed under condition
-    investor.has_written_confirmation_of_expertise
+    investor.has_written_adherence
+    and (investor.investment_amount >= $100,000
+         or investor.has_expertise_assessment)
   consequence equals true
 
-  exception definition is_well_informed under condition
-    investor.is_director_or_conductor
-  consequence equals true
+  definition may_invest equals
+    is_well_informed or exempt_from_conditions
 ```
 
 ## Commentary
 
-Quantitative tests (large undertaking, 125k EUR minimum) are cleanly algorithmic.
-The hierarchy of categories maps naturally to Catala's exception structure.
+Quantitative tests (large undertaking, the EUR 100,000 minimum) are
+cleanly algorithmic. The hierarchy of categories maps naturally to
+Catala's exception structure.
+
+Encoding history: an earlier revision required the EUR minimum AND an
+expertise assessment, where Article 2(1)(b) requires either one, in
+combination with the written adherence statement of Article 2(1)(a) —
+and used the pre-2023 EUR 125,000 threshold. The discrepancy surfaced
+when this specification was cross-checked against the statutory text
+quoted in a sibling implementation. See docs/methodology.md.

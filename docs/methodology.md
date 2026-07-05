@@ -118,3 +118,28 @@ make catala
 # Run test suite
 make test
 ```
+
+## Case Study: RAIF Article 2 (revision of 2026-07-05)
+
+The well-informed investor encoding was corrected against the
+consolidated statutory text after a cross-check revealed two defects
+in the original revision:
+
+| Element | Original encoding | Corrected encoding | Statutory basis |
+|---------|-------------------|--------------------|-----------------|
+| Condition structure | minimum investment AND assessment | written adherence AND (minimum investment OR assessment) | Art. 2(1)(a)-(b): (a) is conjunctive with (b); (b)(i) and (b)(ii) are alternatives |
+| Minimum investment | EUR 125,000 | EUR 100,000 | Law of 21 July 2023, amending the Law of 23 July 2016 |
+| Written statement | conflated with third-party assessment | separate input (`has_written_adherence` vs `has_expertise_assessment`) | (a) is the investor's own statement; (b)(ii) is a certification by a credit institution, investment firm, UCITS ManCo or authorised AIFM |
+| Directors | treated as well-informed | separate `exempt_from_conditions` / `may_invest` outputs | Art. 2(2) disapplies the conditions; it does not confer the status |
+
+The discrepancy was surfaced mechanically: a sibling implementation
+quoted the statute with OR where this specification encoded AND. Two
+formalizations of the same text cannot both be right, and the
+disagreement is visible in a way two lawyers' readings of the same
+paragraph are not. This is the methodology's argument in miniature.
+
+Documented simplification, unresolved: MiFID II Annex II section II.1
+elective-professional treatment requires client-side quantitative
+criteria (trading frequency, portfolio size, professional experience)
+in addition to the firm's assessment. The encoding folds these into
+`firm_has_assessed_expertise`.

@@ -76,12 +76,11 @@ declaration scope AIFExclusions:
 
 ```catala
 scope AIFExclusions:
+  # Single source of truth: reuse the Article 4(1)(a) definition
+  # rather than restating it (an earlier restatement drifted by
+  # omitting the investor-benefit criterion).
   definition base_aif_status equals
-    fund.is_collective_investment_undertaking
-    and fund.raises_capital_from_investors
-    and fund.number_of_investors >= 2
-    and fund.has_defined_investment_policy
-    and (not fund.requires_ucits_authorization)
+    (output of AIFDefinition with { -- fund: fund }).qualifies_as_aif
 
   definition is_excluded equals false
 

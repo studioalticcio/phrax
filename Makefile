@@ -53,3 +53,9 @@ clean:
 	rm -f paper/main.pdf
 	rm -rf _build/
 	@echo "Clean complete."
+
+# Compile the specification to browser JS (web/_build/default/main.bc.js)
+web:
+	./web/generate.sh
+
+.PHONY: web

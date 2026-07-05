@@ -50,8 +50,8 @@ catala ocaml catala/professional_investor.catala_en
 # Generate Python
 catala python catala/raif_structure.catala_en
 
-# Interpret a scope
-catala interpret catala/professional_investor.catala_en --scope=InvestorClassification
+# Run one test scope under the interpreter
+catala interpret tests/test_professional_investor.catala_en --scope=Test_WII_Adherence_And_100k
 ```
 
 ## Specifications
@@ -72,6 +72,18 @@ phrax/
 ├── paper/      # Technical paper (LaTeX)
 └── docs/       # Documentation
 ```
+
+## Browser build
+
+The specification compiles to JavaScript (Catala -> OCaml -> js_of_ocaml):
+
+```bash
+make web   # requires opam deps + node; runs a smoke matrix, ~54KB gzipped
+```
+
+The bundle exports `globalThis.SanctaphraxLib` with
+`professionalInvestorStatus` and `wellInformedInvestorStatus`. What runs
+in the browser is compiled from the statute encoding, not a hand port.
 
 ## Paper
 
