@@ -99,4 +99,4 @@ MIT
 
 ## Author
 
-Aymane Bengrina — [aymane@alticc.io](mailto:aymane@alticc.io)
+Studio Alticcio — [studio@alticc.io](mailto:studio@alticc.io)
