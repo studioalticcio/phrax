@@ -4,6 +4,8 @@ Formal specification of financial regulations using [Catala](https://catala-lang
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Try it in the browser:** [The Statute That Compiles](https://alticc.io/essays/the-statute-that-compiles) — a Luxembourg fund-law fragment you can run, with the essay explaining why.
+
 ## What is phrax?
 
 phrax translates legal text into executable, testable code. It takes EU financial directives (AIFMD, MiFID II, RAIF Law) and encodes them in Catala—a language designed to mirror the structure of legislation.
